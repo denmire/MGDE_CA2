@@ -6,39 +6,74 @@ using Lean.Touch;
 public class PlayerScript : MonoBehaviour
 {
 
-    bool mainWeapon = true;
     bool Pressed = false;
     [SerializeField]
     float bulletCooldown = .25f;
-    float Timer = .25f;
+    float bulletTimer = .25f;
     [SerializeField]
     float bulletSpeed = 2f;
 
     [SerializeField]
+    float phoneInitialTilt;
+    [SerializeField]
+    float phoneSubcequentTilt;
+    [SerializeField]
+    double tiltThreshold;
+    float tiltCD = 1;
+    float tiltTimer = 1;
+    [SerializeField]
+    float jumpHeight = 5;
+
+    [SerializeField]
+    float playerSpeed;
+    [SerializeField]
+    float playerMaxSpeed;
+
     private Animator animator;
     [SerializeField]
     Rigidbody2D bulletRB;
+    Rigidbody2D playerRB;
     [SerializeField]
     Transform bulletSpawn;
 
     private void Start()
     {
         animator = this.GetComponent<Animator>();
+        playerRB = this.GetComponent<Rigidbody2D>();
+        playerRB.velocity = new Vector2(0, 0);
     }
     private void Update()
     {
-        Timer += Time.deltaTime;
+        bulletTimer += Time.deltaTime;
+        tiltTimer += Time.deltaTime;
 
-        if (Timer > bulletCooldown && Pressed)
+        animator.SetFloat("Speed", Mathf.Abs(Input.acceleration.y));
+        playerSpeed *= Input.acceleration.y;
+        playerRB.velocity += new Vector2(Mathf.Clamp(playerSpeed, -playerMaxSpeed, playerMaxSpeed), 0);
+
+        phoneInitialTilt = Input.acceleration.z;
+        if (tiltTimer > tiltCD)
+        {
+            phoneSubcequentTilt = Input.acceleration.z;
+            double phoneTiltAngle = tiltThreshold / 180.0;
+            if ((phoneSubcequentTilt - phoneInitialTilt) >= phoneTiltAngle)
+            {
+                playerRB.velocity += new Vector2(0, jumpHeight);
+            }
+        }
+        animator.SetFloat("Height", playerRB.velocity.y);
+
+        if (bulletTimer > bulletCooldown && Pressed)
         {
             Rigidbody2D rb;
 
             animator.SetBool("Shoot", true);
+            Debug.Log("Shoot");
             rb = Instantiate(bulletRB, bulletSpawn.position, bulletSpawn.rotation);
 
             rb.AddForce(bulletSpeed * bulletSpawn.right);
 
-            Timer = 0;
+            bulletTimer = 0;
         }
         else if (!Pressed)
         {
