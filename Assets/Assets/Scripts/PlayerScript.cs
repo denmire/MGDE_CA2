@@ -14,20 +14,14 @@ public class PlayerScript : MonoBehaviour
     float bulletSpeed = 2f;
 
     [SerializeField]
-    float phoneInitialTilt;
+    float jumpHeight = 3;
     [SerializeField]
-    float phoneSubcequentTilt;
-    [SerializeField]
-    double tiltThreshold;
-    float tiltCD = 1;
-    float tiltTimer = 1;
-    [SerializeField]
-    float jumpHeight = 5;
+    float jumpMaxHeight = 5;
 
     [SerializeField]
-    float playerSpeed;
+    float playerSpeed = 3;
     [SerializeField]
-    float playerMaxSpeed;
+    float playerMaxSpeed = 5;
 
     private Animator animator;
     [SerializeField]
@@ -35,40 +29,36 @@ public class PlayerScript : MonoBehaviour
     Rigidbody2D playerRB;
     [SerializeField]
     Transform bulletSpawn;
+    BoxCollider2D playerCollider;
+    [SerializeField]
+    Collider2D[] colliderGround;
 
     private void Start()
     {
+        colliderGround = Physics2D.OverlapBoxAll(new Vector2(0, 0), new Vector2(Mathf.Infinity, 20), 0, 1 << LayerMask.NameToLayer("Terrain"));
         animator = this.GetComponent<Animator>();
         playerRB = this.GetComponent<Rigidbody2D>();
+        playerCollider = this.GetComponent<BoxCollider2D>();
         playerRB.velocity = new Vector2(0, 0);
     }
     private void Update()
     {
         bulletTimer += Time.deltaTime;
-        tiltTimer += Time.deltaTime;
 
-        animator.SetFloat("Speed", Mathf.Abs(Input.acceleration.y));
-        playerSpeed *= Input.acceleration.y;
-        playerRB.velocity += new Vector2(Mathf.Clamp(playerSpeed, -playerMaxSpeed, playerMaxSpeed), 0);
+        Vector3 tilt = Input.acceleration;
+        tilt = Quaternion.Euler(60, 0, 0) * tilt;
+        animator.SetFloat("Speed", Mathf.Abs(tilt.x));
+        playerRB.velocity += new Vector2(tilt.x, 0);
 
-        phoneInitialTilt = Input.acceleration.z;
-        if (tiltTimer > tiltCD)
-        {
-            phoneSubcequentTilt = Input.acceleration.z;
-            double phoneTiltAngle = tiltThreshold / 180.0;
-            if ((phoneSubcequentTilt - phoneInitialTilt) >= phoneTiltAngle)
-            {
-                playerRB.velocity += new Vector2(0, jumpHeight);
-            }
-        }
-        animator.SetFloat("Height", playerRB.velocity.y);
+        if (touchGround())
+            playerRB.velocity += new Vector2(0, Mathf.Clamp(-tilt.y * jumpHeight,0,jumpMaxHeight));
+        animator.SetBool("Height", !touchGround());
 
         if (bulletTimer > bulletCooldown && Pressed)
         {
             Rigidbody2D rb;
 
             animator.SetBool("Shoot", true);
-            Debug.Log("Shoot");
             rb = Instantiate(bulletRB, bulletSpawn.position, bulletSpawn.rotation);
 
             rb.AddForce(bulletSpeed * bulletSpawn.right);
@@ -79,8 +69,6 @@ public class PlayerScript : MonoBehaviour
         {
             animator.SetBool("Shoot", false);
         }
-
-        Debug.Log(Pressed);
     }
 
     void OnEnable()
@@ -98,5 +86,16 @@ public class PlayerScript : MonoBehaviour
     void press(LeanFinger finger)
     {
         Pressed = !Pressed;
+    }
+    private bool touchGround() // checks if player is on ground, make sure player cant infinitely jump
+    {
+        for (int i = 0; i < colliderGround.Length; i++)
+        {
+            if (playerCollider.IsTouching(colliderGround[i]))
+            {
+                return true;
+            }
+        }
+        return false;
     }
 }

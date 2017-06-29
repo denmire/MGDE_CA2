@@ -20,4 +20,14 @@ public class MenuButtons : MonoBehaviour {
     {
         SceneManager.LoadScene("Rules");
     }
+
+    public void PlayBtnClick()
+    {
+        SceneManager.LoadScene("Endless runner");
+    }
+
+    public void BackbtnClickMenu()
+    {
+        SceneManager.LoadScene("Menu");
+    }
 }
