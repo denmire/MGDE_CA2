@@ -2,11 +2,15 @@
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.SceneManagement;
+using UnityEngine.UI;
 
 public class MenuButtons : MonoBehaviour {
 
-	// Use this for initialization
-	void Start () {
+    public GameObject BtnPanel;
+    public GameObject soundsetting;
+
+    // Use this for initialization
+    void Start () {
 		
 	}
 
@@ -30,4 +34,16 @@ public class MenuButtons : MonoBehaviour {
     {
         SceneManager.LoadScene("Menu");
     }
+
+    public void MenuOptionsBtnClick()
+    {
+        SceneManager.LoadScene("Settings");
+    }
+
+    public void QuitBtnClick()
+    {
+        SceneManager.LoadScene("Menu");
+    }
+
+    
 }
