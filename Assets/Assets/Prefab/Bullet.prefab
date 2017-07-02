@@ -21,10 +21,12 @@ GameObject:
   - component: {fileID: 4155185610136170}
   - component: {fileID: 212699646877005298}
   - component: {fileID: 95363036665202060}
-  - component: {fileID: 50953640980011900}
+  - component: {fileID: 70685836202452282}
+  - component: {fileID: 114979816520572158}
+  - component: {fileID: 50829350090395102}
   m_Layer: 0
   m_Name: Bullet
-  m_TagString: Untagged
+  m_TagString: Bullet
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -36,13 +38,13 @@ Transform:
   m_PrefabInternal: {fileID: 100100000}
   m_GameObject: {fileID: 1015483024754712}
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalPosition: {x: 2.19, y: 1.82, z: 0}
   m_LocalScale: {x: 0.25, y: 0.25, z: 1}
   m_Children: []
   m_Father: {fileID: 0}
   m_RootOrder: 0
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!50 &50953640980011900
+--- !u!50 &50829350090395102
 Rigidbody2D:
   serializedVersion: 4
   m_ObjectHideFlags: 1
@@ -62,6 +64,21 @@ Rigidbody2D:
   m_SleepingMode: 1
   m_CollisionDetection: 0
   m_Constraints: 2
+--- !u!70 &70685836202452282
+CapsuleCollider2D:
+  m_ObjectHideFlags: 1
+  m_PrefabParentObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 100100000}
+  m_GameObject: {fileID: 1015483024754712}
+  m_Enabled: 1
+  m_Density: 1
+  m_Material: {fileID: 0}
+  m_IsTrigger: 0
+  m_UsedByEffector: 0
+  m_UsedByComposite: 0
+  m_Offset: {x: 0.27292633, y: -0.029500961}
+  m_Size: {x: 1.1501598, y: 1.1501598}
+  m_Direction: 0
 --- !u!95 &95363036665202060
 Animator:
   serializedVersion: 3
@@ -71,7 +88,7 @@ Animator:
   m_GameObject: {fileID: 1015483024754712}
   m_Enabled: 1
   m_Avatar: {fileID: 0}
-  m_Controller: {fileID: 9100000, guid: 0ccb9509b07be4047bb8c46d5d4aaf1d, type: 2}
+  m_Controller: {fileID: 0}
   m_CullingMode: 0
   m_UpdateMode: 0
   m_ApplyRootMotion: 0
@@ -79,6 +96,17 @@ Animator:
   m_WarningMessage: 
   m_HasTransformHierarchy: 1
   m_AllowConstantClipSamplingOptimization: 1
+--- !u!114 &114979816520572158
+MonoBehaviour:
+  m_ObjectHideFlags: 1
+  m_PrefabParentObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 100100000}
+  m_GameObject: {fileID: 1015483024754712}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: e68e05baa37fa504c9a10b57178da290, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
 --- !u!212 &212699646877005298
 SpriteRenderer:
   m_ObjectHideFlags: 1

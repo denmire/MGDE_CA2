@@ -6,9 +6,15 @@ public class PlatformGenerator : MonoBehaviour {
 
     public GameObject platform;
     public Transform generationPt;
-    public float distBetween;
+    
+    public float distBetweenMin;
+    public float distBetweenMax;
 
+    //public GameObject enemy;
+    private float distBetween;
     private float platformWidth;
+
+    public ObjectPooler ObjectPool;
 
 	// Use this for initialization
 	void Start () {
@@ -21,6 +27,7 @@ public class PlatformGenerator : MonoBehaviour {
 	void Update () {
 
         Spawnfloor();
+        //SpawnEnemy();
 
     }
 
@@ -28,13 +35,32 @@ public class PlatformGenerator : MonoBehaviour {
     {
         if(transform.position.x < generationPt.position.x)
         {
+
+            distBetween = Random.Range(distBetweenMin, distBetweenMax);
+
             transform.position = new Vector3(transform.position.x + platformWidth + distBetween, transform.position.y, transform.position.z);
 
-            Instantiate(platform, transform.position, transform.rotation);
+            //Instantiate(platform, transform.position, transform.rotation);
+
+            GameObject newPlatform = ObjectPool.GetPooledObj();
+            newPlatform.transform.position = transform.position;
+            newPlatform.transform.rotation = transform.rotation;
+            newPlatform.SetActive(true);
+
         }
 
 
     }
-
+    /*
+    void SpawnEnemy()
+    {
+        if (enemy.transform.position.x < generationPt.position.x)
+        {
+            enemy.transform.position = new Vector3(Random.Range(platformWidth - 1, platformWidth)+ distBetween + enemy.transform.position.x, enemy.transform.position.y, enemy.transform.position.z);
+            
+            Instantiate(enemy, enemy.transform.position, enemy.transform.rotation);
+        }
+    }
+    */
 
 }
