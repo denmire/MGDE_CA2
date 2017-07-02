@@ -5,6 +5,13 @@ using Lean.Touch;
 
 public class PlayerScript : MonoBehaviour
 {
+    [SerializeField]
+    bool isDead;
+
+    [SerializeField]
+    float playerSpeed;
+    [SerializeField]
+    float maxSpeed;
 
     bool Pressed = false;
     [SerializeField]
@@ -14,23 +21,17 @@ public class PlayerScript : MonoBehaviour
     float bulletSpeed = 2f;
 
     [SerializeField]
-    float jumpHeight = 3;
+    float jumpHeight = 5;
     [SerializeField]
-    float jumpMaxHeight = 5;
+    float tiltThreshold = .5f;
     [SerializeField]
-    float tiltThreshold = 30;
-    float tiltcount = 0;
+    float tiltThresholdGyro = 30;
     float tilt1;
     float tilt2;
     float timer = 0;
-    float timerCD = 0.5f;
+    float timerCD = 0.3f;
 
-    [SerializeField]
-    float playerSpeed = 3;
-    [SerializeField]
-    float playerMaxSpeed = 5;
-
-    private Animator animator;
+    Animator animator;
     [SerializeField]
     Rigidbody2D bulletRB;
     Rigidbody2D playerRB;
@@ -39,45 +40,73 @@ public class PlayerScript : MonoBehaviour
     BoxCollider2D playerCollider;
     [SerializeField]
     Collider2D[] colliderGround;
+    [SerializeField]
+    Collider2D[] colliderEnemy;
+
+    bool gyroAvailable;
+    Gyroscope gyro;
 
     private void Start()
     {
-        colliderGround = Physics2D.OverlapBoxAll(new Vector2(0, 0), new Vector2(Mathf.Infinity, 20), 0, 1 << LayerMask.NameToLayer("Terrain"));
+        isDead = false;
         animator = this.GetComponent<Animator>();
         playerRB = this.GetComponent<Rigidbody2D>();
         playerCollider = this.GetComponent<BoxCollider2D>();
+
+        gyroAvailable = enableGyro();
+
         playerRB.velocity = new Vector2(0, 0);
     }
     private void Update()
     {
+        colliderGround = Physics2D.OverlapBoxAll(new Vector2(0, 0), new Vector2(Mathf.Infinity, 20), 0, 1 << LayerMask.NameToLayer("Terrain"));
+        colliderEnemy = Physics2D.OverlapBoxAll(new Vector2(0, 0), new Vector2(Mathf.Infinity, 20), 0, 1 << LayerMask.NameToLayer("Enemy"));
+
         bulletTimer += Time.deltaTime;
 
-        Vector3 tilt = Input.acceleration;
-        //tilt = Quaternion.Euler(60, 0, 0) * tilt;
-        animator.SetFloat("Speed", Mathf.Abs(tilt.x));
-        playerRB.velocity += new Vector2(tilt.x, 0);
+        playerRB.velocity += new Vector2(playerSpeed, 0);
 
-        if (touchGround())
+        if (playerRB.velocity.magnitude > maxSpeed) //makes sure player doesnt not accelerate past a certain speed
         {
-            tilt = Input.acceleration;
-            tilt1 = tilt.z;
-            //while (timer < timerCD)
-            //{
-            //    Debug.Log("Hello2");
-            //    timer += Time.deltaTime;
-            //}
-            //timer = 0;
-            tilt = Input.acceleration;
-            tilt2 = tilt.z;
-            if (tilt1 < tilt2)
-                tiltcount += 1;
-            else
-                tiltcount = 0;
-            if (tiltcount >= tiltThreshold)
-                playerRB.velocity += new Vector2(0, Mathf.Clamp(-tilt.z * jumpHeight, 0, jumpMaxHeight));
+            playerRB.velocity = playerRB.velocity.normalized * maxSpeed;
         }
-        //playerRB.velocity += new Vector2(0, Mathf.Clamp(-tilt.z * jumpHeight,0,jumpMaxHeight));
-        //animator.SetBool("Height", !touchGround());
+
+        if (gyroAvailable)
+        {
+            //playerRB.velocity += new Vector2(gyro.rotationRateUnbiased.y, 0);
+
+            if (gyro.rotationRateUnbiased.x > tiltThresholdGyro && touchGround())
+                playerRB.velocity = new Vector2(0, jumpHeight);
+            animator.SetBool("Jump", !touchGround());
+        }
+        else
+        {
+            Vector3 tilt = Input.acceleration;
+            //animator.SetFloat("Speed", Mathf.Abs(tilt.x));
+            //playerRB.velocity += new Vector2(tilt.x, 0);
+
+            if (touchGround())
+            {
+                timer += Time.deltaTime;
+                tilt = Input.acceleration;
+                tilt1 = tilt.z;
+                if (timer > timerCD)
+                {
+                    tilt = Input.acceleration;
+                    tilt2 = tilt.z;
+                    timer = 0;
+                }
+                if (tilt1 - tilt2 >= tiltThreshold || Input.GetKey(KeyCode.W))
+                        playerRB.velocity += new Vector2(0, jumpHeight);
+            }
+            animator.SetBool("Jump", !touchGround());
+        }
+
+        if (touchEnemy())
+        {
+            isDead = true;
+            Handheld.Vibrate();
+        }
 
         if (bulletTimer > bulletCooldown && Pressed)
         {
@@ -117,9 +146,28 @@ public class PlayerScript : MonoBehaviour
         for (int i = 0; i < colliderGround.Length; i++)
         {
             if (playerCollider.IsTouching(colliderGround[i]))
-            {
                 return true;
-            }
+        }
+        return false;
+    }
+
+    private bool touchEnemy() // checks if player is on ground, make sure player cant infinitely jump
+    {
+        for (int i = 0; i < colliderEnemy.Length; i++)
+        {
+            if (playerCollider.IsTouching(colliderEnemy[i]))
+                return true;
+        }
+        return false;
+    }
+
+    bool enableGyro()
+    {
+        if (SystemInfo.supportsGyroscope)
+        {
+            gyro = Input.gyro;
+            gyro.enabled = true;
+            return true;
         }
         return false;
     }
